@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notas MultiOne</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>AnotaOne</h1>
+
+  <!-- Adicionar Cliente (FORA DO FORM) -->
+  <div class="add-client-box">
+    <input type="text" id="novoCliente" placeholder="Adicionar novo cliente">
+    <button id="addClienteBtn">+</button>
+  </div>
+
+  <!-- Abas -->
+  <div id="tabs" class="tabs"></div>
+
+  <!-- Formulário das anotações -->
+  <form id="noteForm">
+    <label>Etapa</label>
+    <input type="text" id="etapa" placeholder="Situação do cliente(acompanhamento, treinamento, aguardando solução de bugs, etc)" required>
+
+    <label>Observações</label>
+    <textarea id="observacoes" rows="4" required></textarea>
+
+    <label>Data</label>
+    <input type="date" id="data" required>
+
+    <button type="submit">Adicionar Anotação</button>
+  </form>
+
+  <h2 id="tituloTabela">Anotações</h2>
+
+  <table id="notesTable">
+    <thead>
+      <tr>
+        <th>Etapa</th>
+        <th>Observações</th>
+        <th>Data</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button id="exportExcel">Exportar Excel</button>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
