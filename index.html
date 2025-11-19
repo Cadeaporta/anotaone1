@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notas MultiOne</title>
+  <title>AnotaOne - Gerenciador de Clientes</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -13,38 +12,25 @@
 
   <h1>AnotaOne</h1>
 
-  <!-- Adicionar Cliente (FORA DO FORM) -->
+  <!-- Adicionar Cliente -->
   <div class="add-client-box">
     <input type="text" id="novoCliente" placeholder="Adicionar novo cliente">
     <button id="addClienteBtn">+</button>
   </div>
 
-  <!-- Abas -->
+  <!-- Abas de Clientes -->
   <div id="tabs" class="tabs"></div>
 
   <!-- Formulário das anotações -->
   <form id="noteForm">
-    <label>Etapa</label>
-    <input type="text" id="etapa" placeholder="Situação do cliente(acompanhamento, treinamento, aguardando solução de bugs, etc)" required>
+    <label for="etapa">Etapa</label>
+    <input type="text" id="etapa" placeholder="Situação do cliente (acompanhamento, treinamento, aguardando solução de bugs, etc)" required>
 
-    <label>Observações</label>
-    <textarea id="observacoes" rows="4" required></textarea>
+    <label for="observacoes">Observações</label>
+    <textarea id="observacoes" rows="4" placeholder="Descreva o que foi feito ou observado..." required></textarea>
 
-    <label id="dataHora">Data e hora</label>
+    <label for="data">Data e hora</label>
     <input type="datetime-local" id="data" required>
-
-    <script>
-    const input = document.getElementById('dataHora');
-    const resultado = document.getElementById('resultado');
-
-    input.addEventListener('change', function() {
-    const data = new Date(this.value);
-    const formatado = data.toLocaleString('pt-BR');
-    resultado.textContent = formatado;
-    });
-    </script>
-
-    
 
     <button type="submit">Adicionar Anotação</button>
   </form>
@@ -57,15 +43,17 @@
         <th>Etapa</th>
         <th>Observações</th>
         <th>Data</th>
+        <th>Ações</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <button id="exportExcel">Exportar Excel</button>
+  <button id="exportExcel">Exportar para XLSX</button>
 
 </div>
-
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

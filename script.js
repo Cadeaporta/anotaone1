@@ -1,4 +1,4 @@
-// script.js — versão compatível com seu HTML atual
+// script.js — versão corrigida (IDs, exclusão estável, XLSX)
 document.addEventListener("DOMContentLoaded", () => {
   // elementos (IDs do seu HTML)
   const inputNovoCliente = document.getElementById("novoCliente");
@@ -25,6 +25,17 @@ document.addEventListener("DOMContentLoaded", () => {
   let anotacoes = JSON.parse(localStorage.getItem(LS_ANOTACOES)) || [];
   let clienteSelecionado = null; // null = todas
 
+  // Se houver anotações sem id (versões antigas), corrige e salva
+  let precisaSalvarIds = false;
+  anotacoes = anotacoes.map(a => {
+    if (!a.id) {
+      a.id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random();
+      precisaSalvarIds = true;
+    }
+    return a;
+  });
+  if (precisaSalvarIds) salvarAnotacoes();
+
   // --------- utilitários ----------
   function salvarClientes() {
     localStorage.setItem(LS_CLIENTES, JSON.stringify(clientes));
@@ -35,47 +46,84 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function formatarDataBr(dateString) {
-  if (!dateString) return "";
-
-  // Se vier no formato yyyy-mm-dd
-  if (dateString.includes("-")) {
-    const [ano, mes, dia] = dateString.split("-");
-    return `${dia}/${mes}/${ano}`;
+    if (!dateString) return "";
+    const data = new Date(dateString);
+    if (isNaN(data)) return dateString;
+    return data.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
-
-  // Se já estiver no formato BR, só devolve
-  if (dateString.includes("/")) {
-    return dateString;
-  }
-
-  // Caso venha algo inesperado
-  return dateString;
-}
-
 
   function limpaTabela() {
     notesTableBody.innerHTML = "";
   }
 
-  function criarLinhaTabela({ etapa, obs, data }) {
+  function criarLinhaTabela(anotacao) {
     const tr = document.createElement("tr");
+
     const tdEtapa = document.createElement("td");
     const tdObs = document.createElement("td");
     const tdData = document.createElement("td");
+    const tdAcoes = document.createElement("td");
 
-    tdEtapa.innerText = etapa;
-    tdObs.innerText = obs;
-    tdData.innerText = data;
+    tdEtapa.innerText = anotacao.etapa;
+    tdObs.innerText = anotacao.obs;
+    tdData.innerText = anotacao.data;
+
+    // Botão de excluir (usa data-id para segurança)
+    const btnExcluir = document.createElement("button");
+    btnExcluir.innerText = "🗑️";
+    btnExcluir.style.padding = "5px 10px";
+    btnExcluir.style.fontSize = "16px";
+    btnExcluir.dataset.id = anotacao.id;
+
+    btnExcluir.addEventListener("click", (e) => {
+      const id = e.currentTarget.dataset.id;
+      if (!id) return;
+      if (confirm("Excluir esta anotação?")) {
+        anotacoes = anotacoes.filter(a => a.id !== id);
+        salvarAnotacoes();
+        renderTabela();
+      }
+    });
+
+    tdAcoes.appendChild(btnExcluir);
 
     tr.appendChild(tdEtapa);
     tr.appendChild(tdObs);
     tr.appendChild(tdData);
+    tr.appendChild(tdAcoes);
     notesTableBody.appendChild(tr);
+  }
+
+  function excluirCliente(nomeCliente) {
+    if (confirm(`Excluir o cliente "${nomeCliente}" e todas suas anotações?`)) {
+      // Remove o cliente da lista
+      clientes = clientes.filter(c => c !== nomeCliente);
+      salvarClientes();
+
+      // Remove todas as anotações desse cliente
+      anotacoes = anotacoes.filter(a => a.cliente !== nomeCliente);
+      salvarAnotacoes();
+
+      // Se estava selecionado, volta para "Todas"
+      if (clienteSelecionado === nomeCliente) {
+        clienteSelecionado = null;
+      }
+
+      renderTabs();
+      renderTabela();
+    }
   }
 
   // --------- renderização de abas e tabela ----------
   function renderTabs() {
     tabsContainer.innerHTML = "";
+
     // Aba "Todas"
     const btnAll = document.createElement("button");
     btnAll.type = "button";
@@ -89,8 +137,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     tabsContainer.appendChild(btnAll);
 
-    // abas dos clientes
+    // abas dos clientes com botão de excluir
     clientes.forEach(nome => {
+      const divTab = document.createElement("div");
+      divTab.style.display = "inline-flex";
+      divTab.style.alignItems = "center";
+      divTab.style.gap = "5px";
+
       const b = document.createElement("button");
       b.type = "button";
       b.className = "tab-btn";
@@ -101,7 +154,30 @@ document.addEventListener("DOMContentLoaded", () => {
         renderTabs();
         renderTabela();
       });
-      tabsContainer.appendChild(b);
+
+      const btnX = document.createElement("button");
+      btnX.type = "button";
+      btnX.innerText = "×";
+      btnX.style.padding = "8px 12px";
+      btnX.style.fontSize = "18px";
+      btnX.style.background = "#ff4444";
+      btnX.style.color = "white";
+      btnX.style.border = "none";
+      btnX.style.borderRadius = "50%";
+      btnX.style.cursor = "pointer";
+      btnX.style.width = "30px";
+      btnX.style.height = "30px";
+      btnX.style.display = "flex";
+      btnX.style.alignItems = "center";
+      btnX.style.justifyContent = "center";
+      btnX.addEventListener("click", (e) => {
+        e.stopPropagation();
+        excluirCliente(nome);
+      });
+
+      divTab.appendChild(b);
+      divTab.appendChild(btnX);
+      tabsContainer.appendChild(divTab);
     });
   }
 
@@ -109,7 +185,10 @@ document.addEventListener("DOMContentLoaded", () => {
     limpaTabela();
     const filtro = clienteSelecionado;
     tituloTabela.innerText = filtro ? `Anotações — ${filtro}` : "Anotações — Todas";
-    const itens = anotacoes.filter(a => (filtro ? a.cliente === filtro : true));
+
+    const itens = anotacoes
+      .filter(a => (filtro ? a.cliente === filtro : true));
+
     itens.forEach(item => criarLinhaTabela(item));
   }
 
@@ -118,7 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const nome = inputNovoCliente.value.trim();
     if (!nome) return;
     if (clientes.includes(nome)) {
-      // evita duplicata
+      alert("Cliente já existe!");
       inputNovoCliente.value = "";
       inputNovoCliente.focus();
       return;
@@ -126,7 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
     clientes.push(nome);
     salvarClientes();
     inputNovoCliente.value = "";
-    clienteSelecionado = nome; // selecionar automaticamente
+    clienteSelecionado = nome;
     renderTabs();
     renderTabela();
   });
@@ -138,64 +217,68 @@ document.addEventListener("DOMContentLoaded", () => {
     const dataVal = inputData.value;
     if (!etapa || !obs || !dataVal) return;
 
-    // se nenhum cliente selecionado, salva como "Geral"
     const cliente = clienteSelecionado || "Geral";
     if (cliente === "Geral" && !clientes.includes("Geral")) {
-      // opcional: manter "Geral" como cliente se usar esse padrão
       clientes.push("Geral");
       salvarClientes();
       renderTabs();
     }
 
     const dataBr = formatarDataBr(dataVal);
-    const registro = { cliente, etapa, obs, data: dataBr };
+    const registro = {
+      id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random(),
+      cliente,
+      etapa,
+      obs,
+      data: dataBr,
+      _rawDate: dataVal
+    };
+
     anotacoes.push(registro);
     salvarAnotacoes();
 
-    // se quiser que a tabela mostre só do cliente criado, garante seleção
     if (cliente !== clienteSelecionado) {
       clienteSelecionado = cliente;
       renderTabs();
     }
     renderTabela();
 
-    // limpar form
     inputEtapa.value = "";
     inputObs.value = "";
     inputData.value = "";
   });
 
   btnExport.addEventListener("click", () => {
-    // exporta as linhas atualmente visíveis
-    const rows = [];
-    // header
-    rows.push(['"Cliente"', '"Etapa"', '"Observações"', '"Data"'].join(","));
     const filtro = clienteSelecionado;
     const itens = anotacoes.filter(a => (filtro ? a.cliente === filtro : true));
+
+    // Monta os dados no formato que o sheetjs entende
+    const rows = [
+      ["Cliente", "Etapa", "Observações", "Data"]
+    ];
+
     itens.forEach(a => {
-      // escapando aspas nas células
-      const safe = [
-        `"${(a.cliente || "").replace(/"/g, '""')}"`,
-        `"${(a.etapa || "").replace(/"/g, '""')}"`,
-        `"${(a.obs || "").replace(/"/g, '""')}"`,
-        `"${(a.data || "").replace(/"/g, '""')}"`
-      ];
-      rows.push(safe.join(","));
+      rows.push([a.cliente, a.etapa, a.obs, a.data]);
     });
 
-    const csvContent = rows.join("\r\n");
-    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;'\"'" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    const nomeArquivo = clienteSelecionado ? `anotacoes_${clienteSelecionado}.csv` : "anotacoes_todas.csv";
-    link.download = nomeArquivo;
-    link.click();
+    // Cria a planilha
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    // Cria o workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Anotações");
+
+    const nomeArquivo = filtro
+      ? `anotacoes_${filtro}.xlsx`
+      : "anotacoes_todas.xlsx";
+
+    // Exporta o arquivo XLSX
+    XLSX.writeFile(wb, nomeArquivo);
   });
 
   // --------- inicialização ----------
-  // se não houver clientes, mantém tudo visível (ou cria "Geral" se preferir)
   renderTabs();
   renderTabela();
 
-  console.log("script.js inicializado — abas e botões operacionais.");
+  console.log("script.js inicializado com exclusão estável e export XLSX.");
 });
