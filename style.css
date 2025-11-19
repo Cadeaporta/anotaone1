@@ -92,6 +92,7 @@ body {
     .tab-btn.active {
       background: #4502fe;
       color: rgb(255, 255, 255);
+      box-shadow: #ffffff 1px 1px 50px;
     }
 
     .add-client-box {
