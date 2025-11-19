@@ -18,6 +18,8 @@
     <button id="addClienteBtn">+</button>
   </div>
 
+  
+
   <!-- Abas de Clientes -->
   <div id="tabs" class="tabs"></div>
 
@@ -28,6 +30,10 @@
 
     <label for="observacoes">Observações</label>
     <textarea id="observacoes" rows="4" placeholder="Descreva o que foi feito ou observado..." required></textarea>
+
+    <label for="midia">Imagem ou vídeo</label>
+    <input type="file" id="midia" accept="image/*,video/*">
+
 
     <label for="data">Data e hora</label>
     <input type="datetime-local" id="data" required>
@@ -40,6 +46,7 @@
   <table id="notesTable">
     <thead>
       <tr>
+        <th>Cliente</th>
         <th>Etapa</th>
         <th>Observações</th>
         <th>Data</th>

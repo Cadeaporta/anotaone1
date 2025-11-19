@@ -54,7 +54,7 @@ body {
     }
 
     button:hover {
-      background: #3f71fa;
+      background: #4502fe;
     }
 
     table {
@@ -90,8 +90,8 @@ body {
     }
 
     .tab-btn.active {
-      background: #fdfdfd;
-      color: rgb(3, 3, 3);
+      background: #4502fe;
+      color: rgb(255, 255, 255);
     }
 
     .add-client-box {
@@ -110,3 +110,57 @@ body {
       font-weight: bold;
       margin-top: 0;
     }
+
+    .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* espaço entre nome e X */
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 10px;
+  margin-right: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+}
+
+.tag:hover {
+  background: #4502fe;
+}
+
+.tag-name {
+  font-weight: 500;
+}
+
+/* botão X bonitinho */
+.close-btn {
+  background: #ff4d4d;
+  border: none;
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+  padding: 0px;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(1.2);
+  transition: 0.2s ease;
+  pointer-events: none; /* evita clicar sem hover */
+}
+
+.tag:hover .close-btn {
+  opacity: 1;
+  transform: scale(1.7);
+  pointer-events: auto;
+}
+
+
+
+    
+
+    
+
+    

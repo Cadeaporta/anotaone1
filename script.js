@@ -62,14 +62,28 @@ document.addEventListener("DOMContentLoaded", () => {
     notesTableBody.innerHTML = "";
   }
 
+  const inputMidia = document.getElementById("midia");
+
+function lerArquivoBase64(arquivo) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(arquivo);
+  });
+}
+ 
+
   function criarLinhaTabela(anotacao) {
     const tr = document.createElement("tr");
 
+    const tdCliente = document.createElement("td");
     const tdEtapa = document.createElement("td");
     const tdObs = document.createElement("td");
     const tdData = document.createElement("td");
     const tdAcoes = document.createElement("td");
 
+    tdCliente.innerText = anotacao.cliente;
     tdEtapa.innerText = anotacao.etapa;
     tdObs.innerText = anotacao.obs;
     tdData.innerText = anotacao.data;
@@ -93,6 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     tdAcoes.appendChild(btnExcluir);
 
+    tr.appendChild(tdCliente);
     tr.appendChild(tdEtapa);
     tr.appendChild(tdObs);
     tr.appendChild(tdData);
@@ -155,28 +170,23 @@ document.addEventListener("DOMContentLoaded", () => {
         renderTabela();
       });
 
-      const btnX = document.createElement("button");
-      btnX.type = "button";
-      btnX.innerText = "×";
-      btnX.style.padding = "8px 12px";
-      btnX.style.fontSize = "18px";
-      btnX.style.background = "#ff4444";
-      btnX.style.color = "white";
-      btnX.style.border = "none";
-      btnX.style.borderRadius = "50%";
-      btnX.style.cursor = "pointer";
-      btnX.style.width = "30px";
-      btnX.style.height = "30px";
-      btnX.style.display = "flex";
-      btnX.style.alignItems = "center";
-      btnX.style.justifyContent = "center";
-      btnX.addEventListener("click", (e) => {
-        e.stopPropagation();
-        excluirCliente(nome);
-      });
+      const deleteBtn = document.createElement("button");
+deleteBtn.classList.add("close-btn");
+deleteBtn.textContent = "×"; // mais bonitinho
+deleteBtn.title = `Excluir cliente "${nome}"`;
+deleteBtn.addEventListener("click", (e) => {
+  e.stopPropagation(); // evita disparar o clique da aba
+  excluirCliente(nome);
+});
 
-      divTab.appendChild(b);
-      divTab.appendChild(btnX);
+// faz o container agir como "tag"
+divTab.classList.add("tag");
+
+b.classList.add("tag-name"); // só pra organizar
+
+divTab.appendChild(b);
+divTab.appendChild(deleteBtn);
+
       tabsContainer.appendChild(divTab);
     });
   }
@@ -228,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const registro = {
       id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random(),
       cliente,
-      etapa,
+      etapa,    
       obs,
       data: dataBr,
       _rawDate: dataVal
@@ -257,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ["Cliente", "Etapa", "Observações", "Data"]
     ];
 
-    itens.forEach(a => {
+    itens.forEach(a => { 
       rows.push([a.cliente, a.etapa, a.obs, a.data]);
     });
 
