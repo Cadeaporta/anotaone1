@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AnotaOne - Gerenciador de Clientes</title>
   <link rel="stylesheet" href="style.css">
+  <script defer src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
@@ -15,7 +16,10 @@
   <!-- Adicionar Cliente -->
   <div class="add-client-box">
     <input type="text" id="novoCliente" placeholder="Adicionar novo cliente">
-    <button id="addClienteBtn">+</button>
+    <button id="addClienteBtn">
+      <i data-lucide="plus"></i>
+    </button>
+
   </div>
 
   
@@ -62,5 +66,10 @@
     
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="script.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    lucide.createIcons();
+  });
+</script>
 </body>
 </html>

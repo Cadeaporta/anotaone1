@@ -18,6 +18,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  document.addEventListener("DOMContentLoaded", () => {
+  lucide.createIcons();
+});
+
+
   // dados locais
   const LS_CLIENTES = "anotone_clientes";
   const LS_ANOTACOES = "anotone_anotacoes";
