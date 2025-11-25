@@ -151,27 +151,25 @@ body {
 /* botão X bonitinho */
 .close-btn {
   background: #ff4d4d;
-  padding-left: 150px;
-  border: none;
   color: #fff;
   border-radius: 50%;
   width: 16px;
   height: 16px;
   font-size: 12px;
   line-height: 16px;
-  text-align: center;
   padding: 0px;
   cursor: pointer;
   opacity: 0;
-  transform: scale(1.2);
+  transform: scale(5);
   transition: 0.2s ease;
   pointer-events: none; /* evita clicar sem hover */
 }
 
 .tag:hover .close-btn {
   opacity: 1;
-  transform: scale(1.7);
+  transform: scale(1.5);
   pointer-events: auto;
+  margin-left: 11px;
 }
 
 #exportExcel {
