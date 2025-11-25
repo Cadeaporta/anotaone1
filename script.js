@@ -23,6 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+
+
   // dados locais
   const LS_CLIENTES = "anotone_clientes";
   const LS_ANOTACOES = "anotone_anotacoes";
@@ -67,18 +69,6 @@ document.addEventListener("DOMContentLoaded", () => {
     notesTableBody.innerHTML = "";
   }
 
-  const inputMidia = document.getElementById("midia");
-
-function lerArquivoBase64(arquivo) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(arquivo);
-  });
-}
- 
-
   function criarLinhaTabela(anotacao) {
     const tr = document.createElement("tr");
 
@@ -95,7 +85,7 @@ function lerArquivoBase64(arquivo) {
 
     // Botão de excluir (usa data-id para segurança)
     const btnExcluir = document.createElement("button");
-    btnExcluir.innerText = "🗑️";
+    btnExcluir.innerHTML = '<i id="trash" data-lucide="trash-2"></i>';
     btnExcluir.style.padding = "5px 10px";
     btnExcluir.style.fontSize = "16px";
     btnExcluir.dataset.id = anotacao.id;
@@ -109,6 +99,32 @@ function lerArquivoBase64(arquivo) {
         renderTabela();
       }
     });
+
+    // Botão de editar (igual o excluir, só que sem matar ninguém)
+const btnEditar = document.createElement("button");
+btnEditar.innerHTML = '<i id="edit" data-lucide="edit-2"></i>';
+btnEditar.style.padding = "5px 10px";
+btnEditar.style.fontSize = "16px";
+btnEditar.dataset.id = anotacao.id;
+
+btnEditar.addEventListener("click", (e) => {
+  const id = e.currentTarget.dataset.id;
+  if (!id) return;
+
+  // pega a anotação pelo id
+  const item = anotacoes.find(a => a.id == id);
+  if (!item) return;
+
+  // coloca no formulário
+  document.getElementById("cliente").value = item.cliente;
+  document.getElementById("etapa").value = item.etapa;
+  document.getElementById("obs").value = item.obs;
+  document.getElementById("data").value = item.data;
+
+  // marca que não é novo
+  editandoId = id;
+});
+
 
     tdAcoes.appendChild(btnExcluir);
 
