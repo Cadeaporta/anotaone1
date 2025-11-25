@@ -279,6 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (clienteSelecionado === nomeCliente) {
         clienteSelecionado = null;
       }
+      mostrarNotificacao(`Cliente "${nomeCliente}" excluído com sucesso!`);
 
       renderTabs();
       renderTabela();
