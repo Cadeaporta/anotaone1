@@ -255,6 +255,15 @@ divTab.appendChild(deleteBtn);
       renderTabs();
     }
 
+    // Enter adiciona cliente
+inputNovoCliente.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    btnAddCliente.click();
+  }
+});
+
+
     const dataBr = formatarDataBr(dataVal);
     const registro = {
       id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random(),
