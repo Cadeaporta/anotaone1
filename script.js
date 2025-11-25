@@ -13,7 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
     inputData: document.getElementById("data"),
     notesTableBody: document.querySelector("#notesTable tbody"),
     btnExport: document.getElementById("exportExcel"),
-    tituloTabela: document.getElementById("tituloTabela")
+    tituloTabela: document.getElementById("tituloTabela"),
+    notificacao: document.getElementById("notificacao"),
+    notificacaoTexto: document.getElementById("notificacaoTexto")
   };
 
   // Verificação de elementos
@@ -80,6 +82,27 @@ document.addEventListener("DOMContentLoaded", () => {
     elementos.inputObs.value = "";
     elementos.inputData.value = "";
     editandoId = null;
+  }
+
+  function mostrarNotificacao(mensagem, tipo = "sucesso") {
+    elementos.notificacaoTexto.textContent = mensagem;
+    
+    // Remove classe antiga e adiciona nova
+    elementos.notificacao.classList.remove("erro");
+    if (tipo === "erro") {
+      elementos.notificacao.classList.add("erro");
+    }
+    
+    // Mostra notificação
+    elementos.notificacao.classList.add("show");
+    
+    // Recarrega ícones
+    lucide.createIcons();
+    
+    // Remove após 3 segundos
+    setTimeout(() => {
+      elementos.notificacao.classList.remove("show");
+    }, 3000);
   }
 
   // ==================== FUNÇÕES DE TABELA ====================
@@ -223,10 +246,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function adicionarCliente() {
     const nome = elementos.inputNovoCliente.value.trim();
     
-    if (!nome) return;
+    if (!nome) {
+      mostrarNotificacao("Digite um nome para o cliente!", "erro");
+      return;
+    }
     
     if (clientes.includes(nome)) {
-      alert("Cliente já existe!");
+      mostrarNotificacao("Cliente já existe!", "erro");
       elementos.inputNovoCliente.value = "";
       elementos.inputNovoCliente.focus();
       return;
@@ -238,6 +264,8 @@ document.addEventListener("DOMContentLoaded", () => {
     clienteSelecionado = nome;
     renderTabs();
     renderTabela();
+    
+    mostrarNotificacao(`Cliente "${nome}" adicionado com sucesso!`);
   }
 
   function excluirCliente(nomeCliente) {
@@ -265,7 +293,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const obs = elementos.inputObs.value.trim();
     const dataVal = elementos.inputData.value;
     
-    if (!etapa || !obs || !dataVal) return;
+    if (!etapa || !obs || !dataVal) {
+      mostrarNotificacao("Preencha todos os campos!", "erro");
+      return;
+    }
 
     const cliente = clienteSelecionado || "Geral";
     
@@ -289,6 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
           data: dataBr,
           _rawDate: dataVal
         };
+        mostrarNotificacao("Anotação editada com sucesso!");
       }
     } else {
       // Adicionar nova
@@ -301,6 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
         _rawDate: dataVal
       };
       anotacoes.push(registro);
+      mostrarNotificacao("Anotação adicionada com sucesso!");
     }
 
     salvarAnotacoes();
@@ -321,6 +354,11 @@ document.addEventListener("DOMContentLoaded", () => {
       filtro ? a.cliente === filtro : true
     );
 
+    if (itens.length === 0) {
+      mostrarNotificacao("Nenhuma anotação para exportar!", "erro");
+      return;
+    }
+
     const rows = [
       ["Cliente", "Etapa", "Observações", "Data"]
     ];
@@ -338,6 +376,8 @@ document.addEventListener("DOMContentLoaded", () => {
       : "anotacoes_todas.xlsx";
 
     XLSX.writeFile(wb, nomeArquivo);
+    
+    mostrarNotificacao("Arquivo exportado com sucesso!");
   }
 
   // ==================== EVENTOS ====================
