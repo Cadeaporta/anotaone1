@@ -1,55 +1,65 @@
-// script.js — versão corrigida (IDs, exclusão estável, XLSX)
+// ==================== INICIALIZAÇÃO ====================
 document.addEventListener("DOMContentLoaded", () => {
-  // elementos (IDs do seu HTML)
-  const inputNovoCliente = document.getElementById("novoCliente");
-  const btnAddCliente = document.getElementById("addClienteBtn");
-  const tabsContainer = document.getElementById("tabs");
-  const noteForm = document.getElementById("noteForm");
-  const inputEtapa = document.getElementById("etapa");
-  const inputObs = document.getElementById("observacoes");
-  const inputData = document.getElementById("data");
-  const notesTableBody = document.querySelector("#notesTable tbody");
-  const btnExport = document.getElementById("exportExcel");
-  const tituloTabela = document.getElementById("tituloTabela");
+  lucide.createIcons();
 
-  if (!inputNovoCliente || !btnAddCliente || !tabsContainer || !noteForm || !inputEtapa ||
-      !inputObs || !inputData || !notesTableBody || !btnExport) {
+  // ==================== ELEMENTOS DO DOM ====================
+  const elementos = {
+    inputNovoCliente: document.getElementById("novoCliente"),
+    btnAddCliente: document.getElementById("addClienteBtn"),
+    tabsContainer: document.getElementById("tabs"),
+    noteForm: document.getElementById("noteForm"),
+    inputEtapa: document.getElementById("etapa"),
+    inputObs: document.getElementById("observacoes"),
+    inputData: document.getElementById("data"),
+    notesTableBody: document.querySelector("#notesTable tbody"),
+    btnExport: document.getElementById("exportExcel"),
+    tituloTabela: document.getElementById("tituloTabela")
+  };
+
+  // Verificação de elementos
+  if (Object.values(elementos).some(el => !el)) {
     console.error("Algum elemento não foi encontrado — confira os IDs no HTML.");
     return;
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-  lucide.createIcons();
-});
-
-
-
-
-  // dados locais
+  // ==================== VARIÁVEIS GLOBAIS ====================
   const LS_CLIENTES = "anotone_clientes";
   const LS_ANOTACOES = "anotone_anotacoes";
+  
   let clientes = JSON.parse(localStorage.getItem(LS_CLIENTES)) || [];
   let anotacoes = JSON.parse(localStorage.getItem(LS_ANOTACOES)) || [];
   let clienteSelecionado = null; // null = todas
+  let editandoId = null; // ID da anotação sendo editada
 
-  // Se houver anotações sem id (versões antigas), corrige e salva
-  let precisaSalvarIds = false;
-  anotacoes = anotacoes.map(a => {
-    if (!a.id) {
-      a.id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random();
-      precisaSalvarIds = true;
-    }
-    return a;
-  });
-  if (precisaSalvarIds) salvarAnotacoes();
+  // ==================== CORREÇÃO DE IDS ====================
+  corrigirIdsAntigos();
 
-  // --------- utilitários ----------
+  // ==================== FUNÇÕES DE STORAGE ====================
   function salvarClientes() {
     localStorage.setItem(LS_CLIENTES, JSON.stringify(clientes));
   }
 
   function salvarAnotacoes() {
     localStorage.setItem(LS_ANOTACOES, JSON.stringify(anotacoes));
+  }
+
+  function corrigirIdsAntigos() {
+    let precisaSalvar = false;
+    anotacoes = anotacoes.map(a => {
+      if (!a.id) {
+        a.id = gerarId();
+        precisaSalvar = true;
+      }
+      return a;
+    });
+    if (precisaSalvar) salvarAnotacoes();
+  }
+
+  // ==================== FUNÇÕES AUXILIARES ====================
+  function gerarId() {
+    return (crypto && crypto.randomUUID) 
+      ? crypto.randomUUID() 
+      : String(Date.now()) + Math.random();
   }
 
   function formatarDataBr(dateString) {
@@ -65,13 +75,32 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function limparFormulario() {
+    elementos.inputEtapa.value = "";
+    elementos.inputObs.value = "";
+    elementos.inputData.value = "";
+    editandoId = null;
+  }
+
+  // ==================== FUNÇÕES DE TABELA ====================
   function limpaTabela() {
-    notesTableBody.innerHTML = "";
+    elementos.notesTableBody.innerHTML = "";
+  }
+
+  function criarBotaoAcao(icone, cor, callback) {
+    const btn = document.createElement("button");
+    btn.innerHTML = `<i data-lucide="${icone}"></i>`;
+    btn.style.padding = "5px 10px";
+    btn.style.fontSize = "16px";
+    btn.style.background = cor;
+    btn.addEventListener("click", callback);
+    return btn;
   }
 
   function criarLinhaTabela(anotacao) {
     const tr = document.createElement("tr");
 
+    // Células
     const tdCliente = document.createElement("td");
     const tdEtapa = document.createElement("td");
     const tdObs = document.createElement("td");
@@ -83,49 +112,29 @@ document.addEventListener("DOMContentLoaded", () => {
     tdObs.innerText = anotacao.obs;
     tdData.innerText = anotacao.data;
 
-    // Botão de excluir (usa data-id para segurança)
-    const btnExcluir = document.createElement("button");
-    btnExcluir.innerHTML = '<i id="trash" data-lucide="trash-2"></i>';
-    btnExcluir.style.padding = "5px 10px";
-    btnExcluir.style.fontSize = "16px";
-    btnExcluir.dataset.id = anotacao.id;
+    // Botão de editar
+    const btnEditar = criarBotaoAcao("edit-2", "#0047ff", (e) => {
+      const item = anotacoes.find(a => a.id === anotacao.id);
+      if (!item) return;
 
-    btnExcluir.addEventListener("click", (e) => {
-      const id = e.currentTarget.dataset.id;
-      if (!id) return;
+      elementos.inputEtapa.value = item.etapa;
+      elementos.inputObs.value = item.obs;
+      elementos.inputData.value = item._rawDate || "";
+      editandoId = item.id;
+
+      elementos.inputEtapa.focus();
+    });
+
+    // Botão de excluir
+    const btnExcluir = criarBotaoAcao("trash-2", "#ff4d4d", () => {
       if (confirm("Excluir esta anotação?")) {
-        anotacoes = anotacoes.filter(a => a.id !== id);
+        anotacoes = anotacoes.filter(a => a.id !== anotacao.id);
         salvarAnotacoes();
         renderTabela();
       }
     });
 
-    // Botão de editar (igual o excluir, só que sem matar ninguém)
-const btnEditar = document.createElement("button");
-btnEditar.innerHTML = '<i id="edit" data-lucide="edit-2"></i>';
-btnEditar.style.padding = "5px 10px";
-btnEditar.style.fontSize = "16px";
-btnEditar.dataset.id = anotacao.id;
-
-btnEditar.addEventListener("click", (e) => {
-  const id = e.currentTarget.dataset.id;
-  if (!id) return;
-
-  // pega a anotação pelo id
-  const item = anotacoes.find(a => a.id == id);
-  if (!item) return;
-
-  // coloca no formulário
-  document.getElementById("cliente").value = item.cliente;
-  document.getElementById("etapa").value = item.etapa;
-  document.getElementById("obs").value = item.obs;
-  document.getElementById("data").value = item.data;
-
-  // marca que não é novo
-  editandoId = id;
-});
-
-
+    tdAcoes.appendChild(btnEditar);
     tdAcoes.appendChild(btnExcluir);
 
     tr.appendChild(tdCliente);
@@ -133,20 +142,112 @@ btnEditar.addEventListener("click", (e) => {
     tr.appendChild(tdObs);
     tr.appendChild(tdData);
     tr.appendChild(tdAcoes);
-    notesTableBody.appendChild(tr);
+
+    elementos.notesTableBody.appendChild(tr);
+    
+    // Recarrega os ícones do Lucide
+    lucide.createIcons();
+  }
+
+  function renderTabela() {
+    limpaTabela();
+    const filtro = clienteSelecionado;
+    elementos.tituloTabela.innerText = filtro 
+      ? `Anotações — ${filtro}` 
+      : "Anotações — Todas";
+
+    const itens = anotacoes.filter(a => 
+      filtro ? a.cliente === filtro : true
+    );
+
+    itens.forEach(item => criarLinhaTabela(item));
+  }
+
+  // ==================== FUNÇÕES DE ABAS ====================
+  function criarAbaCliente(nome) {
+    const divTab = document.createElement("div");
+    divTab.classList.add("tag");
+
+    const btnNome = document.createElement("button");
+    btnNome.type = "button";
+    btnNome.className = "tab-btn tag-name";
+    btnNome.innerText = nome;
+    if (clienteSelecionado === nome) btnNome.classList.add("active");
+    
+    btnNome.addEventListener("click", () => {
+      clienteSelecionado = nome;
+      renderTabs();
+      renderTabela();
+    });
+
+    const btnDelete = document.createElement("button");
+    btnDelete.classList.add("close-btn");
+    btnDelete.textContent = "×";
+    btnDelete.title = `Excluir cliente "${nome}"`;
+    btnDelete.addEventListener("click", (e) => {
+      e.stopPropagation();
+      excluirCliente(nome);
+    });
+
+    divTab.appendChild(btnNome);
+    divTab.appendChild(btnDelete);
+
+    return divTab;
+  }
+
+  function renderTabs() {
+    elementos.tabsContainer.innerHTML = "";
+
+    // Aba "Todas"
+    const btnAll = document.createElement("button");
+    btnAll.type = "button";
+    btnAll.className = "tab-btn";
+    btnAll.innerText = "Todas";
+    if (clienteSelecionado === null) btnAll.classList.add("active");
+    
+    btnAll.addEventListener("click", () => {
+      clienteSelecionado = null;
+      renderTabs();
+      renderTabela();
+    });
+    
+    elementos.tabsContainer.appendChild(btnAll);
+
+    // Abas dos clientes
+    clientes.forEach(nome => {
+      elementos.tabsContainer.appendChild(criarAbaCliente(nome));
+    });
+  }
+
+  // ==================== FUNÇÕES DE CLIENTE ====================
+  function adicionarCliente() {
+    const nome = elementos.inputNovoCliente.value.trim();
+    
+    if (!nome) return;
+    
+    if (clientes.includes(nome)) {
+      alert("Cliente já existe!");
+      elementos.inputNovoCliente.value = "";
+      elementos.inputNovoCliente.focus();
+      return;
+    }
+    
+    clientes.push(nome);
+    salvarClientes();
+    elementos.inputNovoCliente.value = "";
+    clienteSelecionado = nome;
+    renderTabs();
+    renderTabela();
   }
 
   function excluirCliente(nomeCliente) {
     if (confirm(`Excluir o cliente "${nomeCliente}" e todas suas anotações?`)) {
-      // Remove o cliente da lista
       clientes = clientes.filter(c => c !== nomeCliente);
       salvarClientes();
 
-      // Remove todas as anotações desse cliente
       anotacoes = anotacoes.filter(a => a.cliente !== nomeCliente);
       salvarAnotacoes();
 
-      // Se estava selecionado, volta para "Todas"
       if (clienteSelecionado === nomeCliente) {
         clienteSelecionado = null;
       }
@@ -156,155 +257,79 @@ btnEditar.addEventListener("click", (e) => {
     }
   }
 
-  // --------- renderização de abas e tabela ----------
-  function renderTabs() {
-    tabsContainer.innerHTML = "";
-
-    // Aba "Todas"
-    const btnAll = document.createElement("button");
-    btnAll.type = "button";
-    btnAll.className = "tab-btn";
-    btnAll.innerText = "Todas";
-    if (clienteSelecionado === null) btnAll.classList.add("active");
-    btnAll.addEventListener("click", () => {
-      clienteSelecionado = null;
-      renderTabs();
-      renderTabela();
-    });
-    tabsContainer.appendChild(btnAll);
-
-    // abas dos clientes com botão de excluir
-    clientes.forEach(nome => {
-      const divTab = document.createElement("div");
-      divTab.style.display = "inline-flex";
-      divTab.style.alignItems = "center";
-      divTab.style.gap = "5px";
-
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "tab-btn";
-      b.innerText = nome;
-      if (clienteSelecionado === nome) b.classList.add("active");
-      b.addEventListener("click", () => {
-        clienteSelecionado = nome;
-        renderTabs();
-        renderTabela();
-      });
-
-      const deleteBtn = document.createElement("button");
-deleteBtn.classList.add("close-btn");
-deleteBtn.textContent = "×"; // mais bonitinho
-deleteBtn.title = `Excluir cliente "${nome}"`;
-deleteBtn.addEventListener("click", (e) => {
-  e.stopPropagation(); // evita disparar o clique da aba
-  excluirCliente(nome);
-});
-
-// faz o container agir como "tag"
-divTab.classList.add("tag");
-
-b.classList.add("tag-name"); // só pra organizar
-
-divTab.appendChild(b);
-divTab.appendChild(deleteBtn);
-
-      tabsContainer.appendChild(divTab);
-    });
-  }
-
-  function renderTabela() {
-    limpaTabela();
-    const filtro = clienteSelecionado;
-    tituloTabela.innerText = filtro ? `Anotações — ${filtro}` : "Anotações — Todas";
-
-    const itens = anotacoes
-      .filter(a => (filtro ? a.cliente === filtro : true));
-
-    itens.forEach(item => criarLinhaTabela(item));
-  }
-
-  // --------- eventos ----------
-  btnAddCliente.addEventListener("click", () => {
-    const nome = inputNovoCliente.value.trim();
-    if (!nome) return;
-    if (clientes.includes(nome)) {
-      alert("Cliente já existe!");
-      inputNovoCliente.value = "";
-      inputNovoCliente.focus();
-      return;
-    }
-    clientes.push(nome);
-    salvarClientes();
-    inputNovoCliente.value = "";
-    clienteSelecionado = nome;
-    renderTabs();
-    renderTabela();
-  });
-
-  noteForm.addEventListener("submit", (ev) => {
+  // ==================== FUNÇÕES DE ANOTAÇÃO ====================
+  function adicionarOuEditarAnotacao(ev) {
     ev.preventDefault();
-    const etapa = inputEtapa.value.trim();
-    const obs = inputObs.value.trim();
-    const dataVal = inputData.value;
+    
+    const etapa = elementos.inputEtapa.value.trim();
+    const obs = elementos.inputObs.value.trim();
+    const dataVal = elementos.inputData.value;
+    
     if (!etapa || !obs || !dataVal) return;
 
     const cliente = clienteSelecionado || "Geral";
+    
+    // Garante que "Geral" existe como cliente
     if (cliente === "Geral" && !clientes.includes("Geral")) {
       clientes.push("Geral");
       salvarClientes();
       renderTabs();
     }
 
-    // Enter adiciona cliente
-inputNovoCliente.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    btnAddCliente.click();
-  }
-});
-
-
     const dataBr = formatarDataBr(dataVal);
-    const registro = {
-      id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random(),
-      cliente,
-      etapa,    
-      obs,
-      data: dataBr,
-      _rawDate: dataVal
-    };
 
-    anotacoes.push(registro);
+    // Se está editando
+    if (editandoId) {
+      const index = anotacoes.findIndex(a => a.id === editandoId);
+      if (index !== -1) {
+        anotacoes[index] = {
+          ...anotacoes[index],
+          etapa,
+          obs,
+          data: dataBr,
+          _rawDate: dataVal
+        };
+      }
+    } else {
+      // Adicionar nova
+      const registro = {
+        id: gerarId(),
+        cliente,
+        etapa,
+        obs,
+        data: dataBr,
+        _rawDate: dataVal
+      };
+      anotacoes.push(registro);
+    }
+
     salvarAnotacoes();
 
     if (cliente !== clienteSelecionado) {
       clienteSelecionado = cliente;
       renderTabs();
     }
+    
     renderTabela();
+    limparFormulario();
+  }
 
-    inputEtapa.value = "";
-    inputObs.value = "";
-    inputData.value = "";
-  });
-
-  btnExport.addEventListener("click", () => {
+  // ==================== FUNÇÃO DE EXPORTAÇÃO ====================
+  function exportarParaExcel() {
     const filtro = clienteSelecionado;
-    const itens = anotacoes.filter(a => (filtro ? a.cliente === filtro : true));
+    const itens = anotacoes.filter(a => 
+      filtro ? a.cliente === filtro : true
+    );
 
-    // Monta os dados no formato que o sheetjs entende
     const rows = [
       ["Cliente", "Etapa", "Observações", "Data"]
     ];
 
-    itens.forEach(a => { 
+    itens.forEach(a => {
       rows.push([a.cliente, a.etapa, a.obs, a.data]);
     });
 
-    // Cria a planilha
     const ws = XLSX.utils.aoa_to_sheet(rows);
-
-    // Cria o workbook
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Anotações");
 
@@ -312,13 +337,26 @@ inputNovoCliente.addEventListener("keydown", (e) => {
       ? `anotacoes_${filtro}.xlsx`
       : "anotacoes_todas.xlsx";
 
-    // Exporta o arquivo XLSX
     XLSX.writeFile(wb, nomeArquivo);
+  }
+
+  // ==================== EVENTOS ====================
+  elementos.btnAddCliente.addEventListener("click", adicionarCliente);
+  
+  elementos.inputNovoCliente.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      adicionarCliente();
+    }
   });
 
-  // --------- inicialização ----------
+  elementos.noteForm.addEventListener("submit", adicionarOuEditarAnotacao);
+  
+  elementos.btnExport.addEventListener("click", exportarParaExcel);
+
+  // ==================== INICIALIZAÇÃO FINAL ====================
   renderTabs();
   renderTabela();
 
-  console.log("script.js inicializado com exclusão estável e export XLSX.");
+  console.log("✅ AnotaOne carregado com sucesso!");
 });

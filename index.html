@@ -1,70 +1,133 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <!-- ==================== META TAGS ==================== -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AnotaOne - Gerenciador de Clientes e Anotações">
+  
+  <!-- ==================== TÍTULO ==================== -->
   <title>AnotaOne - Gerenciador de Clientes</title>
+  
+  <!-- ==================== ESTILOS ==================== -->
   <link rel="stylesheet" href="style.css">
+  
+  <!-- ==================== BIBLIOTECAS EXTERNAS ==================== -->
   <script defer src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
+
 <body>
+  <!-- ==================== CONTAINER PRINCIPAL ==================== -->
+  <div class="container">
+    
+    <!-- ==================== CABEÇALHO ==================== -->
+    <header>
+      <h1>AnotaOne</h1>
+    </header>
 
-<div class="container">
+    <!-- ==================== SEÇÃO: ADICIONAR CLIENTE ==================== -->
+    <section class="add-client-section">
+      <div class="add-client-box">
+        <input 
+          type="text" 
+          id="novoCliente" 
+          placeholder="Adicionar novo cliente"
+          autocomplete="off"
+        >
+        <button 
+          id="addClienteBtn" 
+          type="button"
+          title="Adicionar cliente"
+        >
+          <i data-lucide="badge-plus"></i>
+        </button>
+      </div>
+    </section>
 
-  <h1>AnotaOne</h1>
+    <!-- ==================== SEÇÃO: ABAS DE CLIENTES ==================== -->
+    <section class="tabs-section">
+      <div id="tabs" class="tabs"></div>
+    </section>
 
-  <!-- Adicionar Cliente -->
-  <div class="add-client-box">
-    <input type="text" id="novoCliente" placeholder="Adicionar novo cliente">
-    <button id="addClienteBtn">
-      <i id="addclient" data-lucide="badge-plus"></i>
-    </button>
+    <!-- ==================== SEÇÃO: FORMULÁRIO DE ANOTAÇÕES ==================== -->
+    <section class="form-section">
+      <form id="noteForm">
+        
+        <div class="form-group">
+          <label for="etapa">Etapa</label>
+          <input 
+            type="text" 
+            id="etapa" 
+            placeholder="Ex: Acompanhamento, Treinamento, Aguardando solução..." 
+            autocomplete="off"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="observacoes">Observações</label>
+          <textarea 
+            id="observacoes" 
+            rows="4" 
+            placeholder="Descreva o que foi feito ou observado..."
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="data">Data e hora</label>
+          <input 
+            type="datetime-local" 
+            id="data" 
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn-primary">
+          Adicionar Anotação
+        </button>
+      </form>
+    </section>
+
+    <!-- ==================== SEÇÃO: TABELA DE ANOTAÇÕES ==================== -->
+    <section class="table-section">
+      <h2 id="tituloTabela">Anotações</h2>
+      
+      <div class="table-wrapper">
+        <table id="notesTable">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Etapa</th>
+              <th>Observações</th>
+              <th>Data</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Linhas dinâmicas inseridas pelo JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== SEÇÃO: EXPORTAÇÃO ==================== -->
+    <section class="export-section">
+      <button 
+        id="exportExcel" 
+        type="button"
+        class="btn-export"
+        title="Exportar para Excel"
+      >
+        <i data-lucide="file-down"></i>
+        Exportar para XLSX
+      </button>
+    </section>
+
   </div>
 
-  
-
-  <!-- Abas de Clientes -->
-  <div id="tabs" class="tabs"></div>
-
-  <!-- Formulário das anotações -->
-  <form id="noteForm">
-    <label for="etapa">Etapa</label>
-    <input type="text" id="etapa" placeholder="Situação do cliente (acompanhamento, treinamento, aguardando solução de bugs, etc)" required>
-
-    <label for="observacoes">Observações</label>
-    <textarea id="observacoes" rows="4" placeholder="Descreva o que foi feito ou observado..." required></textarea>
-
-    <label for="data">Data e hora</label>
-    <input type="datetime-local" id="data" required>
-
-    <button type="submit">Adicionar Anotação</button>
-  </form>
-
-  <h2 id="tituloTabela">Anotações</h2>
-
-  <table id="notesTable">
-    <thead>
-      <tr>
-        <th>Cliente</th>
-        <th>Etapa</th>
-        <th>Observações</th>
-        <th>Data</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <button id="exportExcel"><i id="file-down" data-lucide="file-down"></i>Exportar para XLSX</button>
-
-</div>
-    
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="script.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    lucide.createIcons();
-  });
-</script>
+  <!-- ==================== SCRIPTS ==================== -->
+  <script src="script.js"></script>
 </body>
 </html>
