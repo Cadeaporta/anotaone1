@@ -133,7 +133,25 @@ document.addEventListener("DOMContentLoaded", () => {
     tdCliente.innerText = anotacao.cliente;
     tdEtapa.innerText = anotacao.etapa;
     tdObs.innerText = anotacao.obs;
-    tdData.innerText = anotacao.data;
+    const dataFormatada = formatarDataBonita(anotacao._rawDate || anotacao.data);
+tdData.innerText = dataFormatada;
+    tdData.classList.add("col-data");
+    function formatarDataBonita(dataISO) {
+  const data = new Date(dataISO);
+
+  const dia = data.getDate().toString().padStart(2, "0");
+
+  const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+                 "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+  const mes = meses[data.getMonth()];
+
+  const ano = data.getFullYear();
+
+  const hora = data.getHours().toString().padStart(2, "0");
+  const min = data.getMinutes().toString().padStart(2, "0");
+
+  return `${dia} ${mes} ${ano} • ${hora}:${min}`;
+}
 
     // Botão de editar
     const btnEditar = criarBotaoAcao("edit-2", "#0047ff", (e) => {

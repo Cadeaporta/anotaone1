@@ -443,3 +443,15 @@ tbody button i {
     font-size: 14px;
   }
 }
+
+table td {
+  white-space: normal;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.col-data {
+  white-space: nowrap;
+}
+
+
