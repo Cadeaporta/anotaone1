@@ -26,6 +26,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  const notificacao = document.getElementById("notificacao");
+const notificacaoTexto = document.getElementById("notificacaoTexto");
+
+function showNotif(texto) {
+  if (!notificacao) return;
+  notificacaoTexto.textContent = texto;
+  notificacao.classList.add("show");
+  setTimeout(() => notificacao.classList.remove("show"), 2500);
+}
+
+
   salvarClientes();
   salvarCores();
 
@@ -239,3 +250,24 @@ document.addEventListener("DOMContentLoaded", () => {
   renderTabs();
   renderTabela();
 });
+
+window.excluirAnotacao = (index) => {
+  if (!confirm("Excluir esta anotação?")) return;
+
+  anotacoes.splice(index, 1);
+  salvarAnotacoes();
+  renderTabela();
+  showNotif("Anotação excluída");
+};
+
+window.editarAnotacao = (index) => {
+  const a = anotacoes[index];
+
+  const novaObs = prompt("Editar observação:", a.obs);
+  if (!novaObs) return;
+
+  a.obs = novaObs;
+  salvarAnotacoes();
+  renderTabela();
+  showNotif("Anotação editada");
+};
