@@ -677,3 +677,31 @@ tbody tr {
   gap: 8px;
 }
 
+/* ================= AJUSTE FINAL: COLUNA AÇÕES ================= */
+
+/* Largura garantida */
+#notesTable th:nth-child(5),
+#notesTable td:nth-child(5) {
+  width: 18%;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Remove padding lateral excessivo que "puxa" pra dentro */
+#notesTable td:nth-child(5) {
+  padding-left: 12px;
+  padding-right: 12px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Garante que Data não seja afetada */
+#notesTable th:nth-child(4),
+#notesTable td:nth-child(4) {
+  padding-right: 18px;
+}
+
+
