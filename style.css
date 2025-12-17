@@ -659,3 +659,21 @@ tbody tr {
 #notesTable td:nth-child(3) {
   width: 38%;
 }
+
+/* ================= AJUSTE COLUNA AÇÕES ================= */
+
+#notesTable th:nth-child(5),
+#notesTable td:nth-child(5) {
+  width: 17%;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Centraliza os botões corretamente */
+#notesTable td:nth-child(5) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
