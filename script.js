@@ -274,23 +274,5 @@ function showNotif(texto) {
   renderTabela();
 });
 
-window.excluirAnotacao = (index) => {
-  if (!confirm("Excluir esta anotação?")) return;
+showNotif("Anotação excluída");
 
-  anotacoes.splice(index, 1);
-  salvarAnotacoes();
-  renderTabela();
-  showNotif("Anotação excluída");
-};
-
-window.editarAnotacao = (index) => {
-  const a = anotacoes[index];
-
-  const novaObs = prompt("Editar observação:", a.obs);
-  if (!novaObs) return;
-
-  a.obs = novaObs;
-  salvarAnotacoes();
-  renderTabela();
-  showNotif("Anotação editada");
-};
