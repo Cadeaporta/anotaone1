@@ -13,6 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
     JSON.parse(localStorage.getItem(LS_CORES)) || {};
 
   const clientes = [];
+  
+  let indexEmEdicao = null;
+
 
   clientesRaw.forEach(c => {
     if (typeof c === "string") {
@@ -191,14 +194,22 @@ function showNotif(texto) {
     renderTabela();
   };
 
-  window.editarAnotacao = (i) => {
-    const a = anotacoes[i];
-    const novaObs = prompt("Editar observação:", a.obs);
-    if (!novaObs) return;
-    a.obs = novaObs;
-    salvarAnotacoes();
-    renderTabela();
-  };
+  window.editarAnotacao = (index) => {
+  const a = anotacoes[index];
+
+  // Preenche o formulário
+  el.etapa.value = a.etapa;
+  el.obs.value = a.obs;
+
+  // Converter data para datetime-local
+  const dataISO = new Date(a.data).toISOString().slice(0, 16);
+  el.data.value = dataISO;
+
+  indexEmEdicao = index;
+
+  showNotif("Editando anotação");
+};
+
 
   /* ========= EVENTOS ========= */
 
@@ -217,23 +228,35 @@ function showNotif(texto) {
   };
 
   el.form.onsubmit = (e) => {
-    e.preventDefault();
-    if (!clienteSelecionado) {
-      alert("Selecione um cliente.");
-      return;
-    }
+  e.preventDefault();
+  if (!clienteSelecionado) {
+    alert("Selecione um cliente.");
+    return;
+  }
 
-    anotacoes.push({
-      cliente: clienteSelecionado,
-      etapa: el.etapa.value,
-      obs: el.obs.value,
-      data: new Date(el.data.value).toLocaleString("pt-BR")
-    });
-
-    salvarAnotacoes();
-    renderTabela();
-    el.form.reset();
+  const anotacao = {
+    cliente: clienteSelecionado,
+    etapa: el.etapa.value,
+    obs: el.obs.value,
+    data: new Date(el.data.value).toLocaleString("pt-BR")
   };
+
+  if (indexEmEdicao !== null) {
+    // MODO EDIÇÃO
+    anotacoes[indexEmEdicao] = anotacao;
+    indexEmEdicao = null;
+    showNotif("Anotação atualizada");
+  } else {
+    // MODO NOVO
+    anotacoes.push(anotacao);
+    showNotif("Anotação adicionada");
+  }
+
+  salvarAnotacoes();
+  renderTabela();
+  el.form.reset();
+};
+
 
   el.export.onclick = () => {
     if (!window.XLSX) return;
