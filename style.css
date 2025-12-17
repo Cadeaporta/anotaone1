@@ -290,7 +290,7 @@ thead {
 }
 
 th {
-  padding: 15px;
+  padding: 18px 20px;
   text-align: left;
   font-weight: bold;
   border: 2px solid #000000;
@@ -411,10 +411,12 @@ tbody button i {
     font-size: 14px;
   }
 
-  th,
-  td {
-    padding: 12px, 150px;
-  }
+td, th {
+  border-bottom: 1px solid #ddd;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
 
   .tabs {
     gap: 8px;
@@ -454,6 +456,12 @@ table td {
 .col-data {
   white-space: nowrap;
 }
+
+tbody tr {
+  line-height: 1.6;
+}
+
+
 
 
 
