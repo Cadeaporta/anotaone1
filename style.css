@@ -635,3 +635,27 @@ tbody tr {
   width: 15%;
 }
 
+/* ================= AJUSTE FINO: PROTOCOLO E DATA ================= */
+
+/* Protocolo: não quebrar caractere por caractere */
+#notesTable th:nth-child(2),
+#notesTable td:nth-child(2) {
+  width: 14%;
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+}
+
+/* Data: manter legível */
+#notesTable th:nth-child(4),
+#notesTable td:nth-child(4) {
+  width: 16%;
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* Observações continuam prioritárias */
+#notesTable th:nth-child(3),
+#notesTable td:nth-child(3) {
+  width: 38%;
+}
