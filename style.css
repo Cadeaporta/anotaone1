@@ -598,3 +598,10 @@ tbody tr {
 }
 
 
+/* Aumentar espaço da coluna Data */
+#notesTable th:nth-child(4),
+#notesTable td:nth-child(4) {
+  width: 18%;
+  white-space: nowrap;
+  text-align: center;
+}
