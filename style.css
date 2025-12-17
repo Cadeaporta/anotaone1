@@ -494,7 +494,105 @@ tbody tr {
 }
 
 
+/* ==================== AJUSTE SUAVE DE ESPAÇAMENTO DA TABELA ==================== */
+/* NÃO muda cores, bordas, layout ou responsividade */
+
+th {
+  padding: 18px 22px;
+}
+
+td {
+  padding: 22px 26px;
+  line-height: 1.6;
+  vertical-align: top;
+}
+
+tbody tr {
+  min-height: 70px;
+}
+
+/* Observações respirando melhor */
+#notesTable td:nth-child(3) {
+  padding: 26px 30px;
+}
 
 
+/* RESET */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
+/* === TABS === */
 
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tab-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  outline: 2px solid white;
+}
+
+.tab-edit,
+.tab-delete {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.tab-edit {
+  background: #222;
+  color: white;
+}
+
+.tab-delete {
+  background: #ff4d4d;
+  color: white;
+}
+
+/* === TABELA (ESPAÇAMENTO) === */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  padding: 18px 22px;
+}
+
+td {
+  padding: 24px 28px;
+  line-height: 1.6;
+  vertical-align: top;
+}
+
+tbody tr {
+  min-height: 70px;
+}
+
+#notesTable td:nth-child(3) {
+  padding: 28px 32px;
+}

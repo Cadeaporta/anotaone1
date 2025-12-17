@@ -1,49 +1,53 @@
-// ==================== INICIALIZAÇÃO ====================
 document.addEventListener("DOMContentLoaded", () => {
-  lucide.createIcons();
+  if (window.lucide) lucide.createIcons();
 
-  // ==================== ELEMENTOS DO DOM ====================
-  const elementos = {
-    inputNovoCliente: document.getElementById("novoCliente"),
-    btnAddCliente: document.getElementById("addClienteBtn"),
-    tabsContainer: document.getElementById("tabs"),
-    noteForm: document.getElementById("noteForm"),
-    inputEtapa: document.getElementById("etapa"),
-    inputObs: document.getElementById("observacoes"),
-    inputData: document.getElementById("data"),
-    notesTableBody: document.querySelector("#notesTable tbody"),
-    btnExport: document.getElementById("exportExcel"),
-    tituloTabela: document.getElementById("tituloTabela"),
-    notificacao: document.getElementById("notificacao"),
-    notificacaoTexto: document.getElementById("notificacaoTexto")
-  };
-
-  // Verificação de elementos
-  if (Object.values(elementos).some(el => !el)) {
-    console.error("Algum elemento não foi encontrado — confira os IDs no HTML.");
-    return;
-  }
-
-  // ==================== VARIÁVEIS GLOBAIS ====================
   const LS_CLIENTES = "anotone_clientes";
   const LS_ANOTACOES = "anotone_anotacoes";
-  
-  let clientes = JSON.parse(localStorage.getItem(LS_CLIENTES)) || [];
+  const LS_CORES = "anotone_clientes_cores";
 
-// converte clientes antigos (string) em objeto
-clientes = clientes.map(c =>
-  typeof c === "string"
-    ? { nome: c, cor: "#0047ff" }
-    : c
-);
-  let anotacoes = JSON.parse(localStorage.getItem(LS_ANOTACOES)) || [];
-  let clienteSelecionado = null; // null = todas
-  let editandoId = null; // ID da anotação sendo editada
+  /* ========= CARGA + MIGRAÇÃO ========= */
 
-  // ==================== CORREÇÃO DE IDS ====================
-  corrigirIdsAntigos();
+  const clientesRaw = JSON.parse(localStorage.getItem(LS_CLIENTES)) || [];
+  const anotacoes = JSON.parse(localStorage.getItem(LS_ANOTACOES)) || [];
+  const coresClientes =
+    JSON.parse(localStorage.getItem(LS_CORES)) || {};
 
-  // ==================== FUNÇÕES DE STORAGE ====================
+  const clientes = [];
+
+  clientesRaw.forEach(c => {
+    if (typeof c === "string") {
+      clientes.push(c);
+    } else if (c && typeof c === "object") {
+      const nome = c.nome || String(c);
+      clientes.push(nome);
+      if (c.cor && !coresClientes[nome]) {
+        coresClientes[nome] = c.cor;
+      }
+    }
+  });
+
+  salvarClientes();
+  salvarCores();
+
+  let clienteSelecionado = null;
+
+  /* ========= ELEMENTOS ========= */
+
+  const el = {
+    novoCliente: document.getElementById("novoCliente"),
+    addClienteBtn: document.getElementById("addClienteBtn"),
+    tabs: document.getElementById("tabs"),
+    form: document.getElementById("noteForm"),
+    etapa: document.getElementById("etapa"),
+    obs: document.getElementById("observacoes"),
+    data: document.getElementById("data"),
+    tbody: document.querySelector("#notesTable tbody"),
+    titulo: document.getElementById("tituloTabela"),
+    export: document.getElementById("exportExcel")
+  };
+
+  /* ========= STORAGE ========= */
+
   function salvarClientes() {
     localStorage.setItem(LS_CLIENTES, JSON.stringify(clientes));
   }
@@ -52,417 +56,186 @@ clientes = clientes.map(c =>
     localStorage.setItem(LS_ANOTACOES, JSON.stringify(anotacoes));
   }
 
-  function corrigirIdsAntigos() {
-    let precisaSalvar = false;
-    anotacoes = anotacoes.map(a => {
-      if (!a.id) {
-        a.id = gerarId();
-        precisaSalvar = true;
-      }
-      return a;
-    });
-    if (precisaSalvar) salvarAnotacoes();
+  function salvarCores() {
+    localStorage.setItem(LS_CORES, JSON.stringify(coresClientes));
   }
 
-  // ==================== FUNÇÕES AUXILIARES ====================
-  function gerarId() {
-    return (crypto && crypto.randomUUID) 
-      ? crypto.randomUUID() 
-      : String(Date.now()) + Math.random();
-  }
+  /* ========= TABS ========= */
 
-  function formatarDataBr(dateString) {
-    if (!dateString) return "";
-    const data = new Date(dateString);
-    if (isNaN(data)) return dateString;
-    return data.toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  function limparFormulario() {
-    elementos.inputEtapa.value = "";
-    elementos.inputObs.value = "";
-    elementos.inputData.value = "";
-    editandoId = null;
-  }
-
-  function mostrarNotificacao(mensagem, tipo = "sucesso") {
-    elementos.notificacaoTexto.textContent = mensagem;
-    
-    // Remove classe antiga e adiciona nova
-    elementos.notificacao.classList.remove("erro");
-    if (tipo === "erro") {
-      elementos.notificacao.classList.add("erro");
-    }
-    
-    // Mostra notificação
-    elementos.notificacao.classList.add("show");
-    
-    // Recarrega ícones
-    lucide.createIcons();
-    
-    // Remove após 3 segundos
-    setTimeout(() => {
-      elementos.notificacao.classList.remove("show");
-    }, 3000);
-  }
-
-  // ==================== FUNÇÕES DE TABELA ====================
-  function limpaTabela() {
-    elementos.notesTableBody.innerHTML = "";
-  }
-
-  function criarBotaoAcao(icone, cor, callback) {
+  function criarAba(nome) {
     const btn = document.createElement("button");
-    btn.innerHTML = `<i data-lucide="${icone}"></i>`;
-    btn.style.padding = "5px 10px";
-    btn.style.fontSize = "16px";
-    btn.style.background = cor;
-    btn.addEventListener("click", callback);
+    btn.className = "tab-btn";
+    btn.textContent = nome;
+    btn.style.background = coresClientes[nome] || "#0047ff";
+
+    if (clienteSelecionado === nome) {
+      btn.classList.add("active");
+    }
+
+    // selecionar
+    btn.onclick = () => {
+      clienteSelecionado = nome;
+      renderTabs();
+      renderTabela();
+    };
+
+    // editar nome (duplo clique)
+    btn.ondblclick = () => {
+      const novoNome = prompt("Editar nome do cliente:", nome);
+      if (!novoNome || novoNome === nome) return;
+
+      const idx = clientes.indexOf(nome);
+      if (idx !== -1) clientes[idx] = novoNome;
+
+      anotacoes.forEach(a => {
+        if (a.cliente === nome) a.cliente = novoNome;
+      });
+
+      if (coresClientes[nome]) {
+        coresClientes[novoNome] = coresClientes[nome];
+        delete coresClientes[nome];
+      }
+
+      clienteSelecionado = novoNome;
+
+      salvarClientes();
+      salvarAnotacoes();
+      salvarCores();
+
+      renderTabs();
+      renderTabela();
+    };
+
+    // editar cor (clique direito)
+    btn.oncontextmenu = (e) => {
+      e.preventDefault();
+
+      const novaCor = prompt(
+        "Cor do cliente (hex ou nome):",
+        coresClientes[nome] || "#0047ff"
+      );
+
+      if (!novaCor) return;
+
+      coresClientes[nome] = novaCor;
+      salvarCores();
+      renderTabs();
+    };
+
     return btn;
   }
 
-  function criarLinhaTabela(anotacao) {
-    const tr = document.createElement("tr");
-
-    // Células
-    const tdCliente = document.createElement("td");
-    const tdEtapa = document.createElement("td");
-    const tdObs = document.createElement("td");
-    const tdData = document.createElement("td");
-    const tdAcoes = document.createElement("td");
-
-    tdCliente.innerText = anotacao.cliente;
-    tdEtapa.innerText = anotacao.etapa;
-    tdObs.innerText = anotacao.obs;
-    const dataFormatada = formatarDataBonita(anotacao._rawDate || anotacao.data);
-tdData.innerText = dataFormatada;
-    tdData.classList.add("col-data");
-    function formatarDataBonita(dataISO) {
-  const data = new Date(dataISO);
-
-  const dia = data.getDate().toString().padStart(2, "0");
-
-  const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-                 "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-  const mes = meses[data.getMonth()];
-
-  const ano = data.getFullYear();
-
-  const hora = data.getHours().toString().padStart(2, "0");
-  const min = data.getMinutes().toString().padStart(2, "0");
-
-  return `${dia} ${mes} ${ano} • ${hora}:${min}`;
-}
-
-    // Botão de editar
-    const btnEditar = criarBotaoAcao("edit-2", "#0047ff", (e) => {
-      const item = anotacoes.find(a => a.id === anotacao.id);
-      if (!item) return;
-
-      elementos.inputEtapa.value = item.etapa;
-      elementos.inputObs.value = item.obs;
-      elementos.inputData.value = item._rawDate || "";
-      editandoId = item.id;
-
-      elementos.inputEtapa.focus();
-    });
-
-    // Botão de excluir
-    const btnExcluir = criarBotaoAcao("trash-2", "#ff4d4d", () => {
-      if (confirm("Excluir esta anotação?")) {
-        anotacoes = anotacoes.filter(a => a.id !== anotacao.id);
-        salvarAnotacoes();
-        renderTabela();
-      }
-    });
-
-    tdAcoes.appendChild(btnEditar);
-    tdAcoes.appendChild(btnExcluir);
-
-    tr.appendChild(tdCliente);
-    tr.appendChild(tdEtapa);
-    tr.appendChild(tdObs);
-    tr.appendChild(tdData);
-    tr.appendChild(tdAcoes);
-
-    elementos.notesTableBody.appendChild(tr);
-    
-    // Recarrega os ícones do Lucide
-    lucide.createIcons();
-  }
-
-  function renderTabela() {
-    limpaTabela();
-    const filtro = clienteSelecionado;
-    elementos.tituloTabela.innerText = filtro 
-      ? `Anotações — ${filtro}` 
-      : "Anotações — Todas";
-
-    const itens = anotacoes.filter(a => 
-      filtro ? a.cliente === filtro : true
-    );
-
-    itens.forEach(item => criarLinhaTabela(item));
-  }
-
-  // ==================== FUNÇÕES DE ABAS ====================
-  function criarAbaCliente(cliente) {
-  const divTab = document.createElement("div");
-  divTab.classList.add("tag");
-
-  const btnNome = document.createElement("button");
-  btnNome.type = "button";
-  btnNome.className = "tab-btn tag-name";
-  btnNome.innerText = cliente.nome;
-  btnNome.style.background = cliente.cor;
-
-  if (clienteSelecionado === cliente.nome) {
-    btnNome.classList.add("active");
-  }
-
-  // selecionar cliente
-  btnNome.addEventListener("click", () => {
-    clienteSelecionado = cliente.nome;
-    renderTabs();
-    renderTabela();
-  });
-
-  // EDITAR nome + cor (duplo clique)
-  btnNome.addEventListener("dblclick", () => {
-    const novoNome = prompt("Novo nome do cliente:", cliente.nome);
-    if (!novoNome) return;
-
-    const novaCor = prompt(
-      "Cor do cliente (hex):",
-      cliente.cor
-    );
-
-    cliente.nome = novoNome.trim();
-    if (novaCor) cliente.cor = novaCor.trim();
-
-    salvarClientes();
-    renderTabs();
-    renderTabela();
-  });
-
-  const btnDelete = document.createElement("button");
-  btnDelete.classList.add("close-btn");
-  btnDelete.textContent = "×";
-
-  btnDelete.addEventListener("click", (e) => {
-    e.stopPropagation();
-    excluirCliente(cliente.nome);
-  });
-
-  divTab.appendChild(btnNome);
-  divTab.appendChild(btnDelete);
-
-  return divTab;
-}
-
-
   function renderTabs() {
-    elementos.tabsContainer.innerHTML = "";
+    el.tabs.innerHTML = "";
 
-    // Aba "Todas"
-    const btnAll = document.createElement("button");
-    btnAll.type = "button";
-    btnAll.className = "tab-btn";
-    btnAll.innerText = "Todas";
-    if (clienteSelecionado === null) btnAll.classList.add("active");
-    
-    btnAll.addEventListener("click", () => {
+    const todas = document.createElement("button");
+    todas.className = "tab-btn";
+    todas.textContent = "Todas";
+    if (!clienteSelecionado) todas.classList.add("active");
+
+    todas.onclick = () => {
       clienteSelecionado = null;
       renderTabs();
       renderTabela();
-    });
-    
-    elementos.tabsContainer.appendChild(btnAll);
+    };
 
-    // Abas dos clientes
-    clientes.forEach(nome => {
-      elementos.tabsContainer.appendChild(criarAbaCliente(nome));
+    el.tabs.appendChild(todas);
+
+    clientes.forEach(c => {
+      el.tabs.appendChild(criarAba(c));
     });
   }
 
-  // ==================== FUNÇÕES DE CLIENTE ====================
-  function adicionarCliente() {
-    const nome = elementos.inputNovoCliente.value.trim();
-    
-    if (!nome) {
-      mostrarNotificacao("Digite um nome para o cliente!", "erro");
-      return;
-    }
-    
-    if (clientes.includes(nome)) {
-      mostrarNotificacao("Cliente já existe!", "erro");
-      elementos.inputNovoCliente.value = "";
-      elementos.inputNovoCliente.focus();
-      return;
-    }
-    
-    clientes.push({
-  nome,
-  cor: "#0047ff"
-});
-    salvarClientes();
-    elementos.inputNovoCliente.value = "";
-    clienteSelecionado = nome;
-    renderTabs();
+  /* ========= TABELA ========= */
+
+  function renderTabela() {
+    el.tbody.innerHTML = "";
+    el.titulo.textContent = clienteSelecionado
+      ? `Anotações — ${clienteSelecionado}`
+      : "Anotações — Todas";
+
+    anotacoes
+      .filter(a => !clienteSelecionado || a.cliente === clienteSelecionado)
+      .forEach((a, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${a.cliente}</td>
+          <td>${a.etapa}</td>
+          <td>${a.obs}</td>
+          <td>${a.data}</td>
+          <td>
+            <button onclick="editarAnotacao(${index})">✏️</button>
+            <button onclick="excluirAnotacao(${index})">🗑</button>
+          </td>
+        `;
+        el.tbody.appendChild(tr);
+      });
+  }
+
+  /* ========= ANOTAÇÕES ========= */
+
+  window.excluirAnotacao = (i) => {
+    anotacoes.splice(i, 1);
+    salvarAnotacoes();
     renderTabela();
-    
-    mostrarNotificacao(`Cliente "${nome}" adicionado com sucesso!`);
-  }
+  };
 
-  function excluirCliente(nomeCliente) {
-    if (confirm(`Excluir o cliente "${nomeCliente}" e todas suas anotações?`)) {
-      clientes = clientes.filter(c => c !== nomeCliente);
-      salvarClientes();
+  window.editarAnotacao = (i) => {
+    const a = anotacoes[i];
+    const novaObs = prompt("Editar observação:", a.obs);
+    if (!novaObs) return;
+    a.obs = novaObs;
+    salvarAnotacoes();
+    renderTabela();
+  };
 
-      anotacoes = anotacoes.filter(a => a.cliente !== nomeCliente);
-      salvarAnotacoes();
+  /* ========= EVENTOS ========= */
 
-      if (clienteSelecionado === nomeCliente) {
-        clienteSelecionado = null;
-      }
-      mostrarNotificacao(`Cliente "${nomeCliente}" excluído com sucesso!`);
+  el.addClienteBtn.onclick = () => {
+    const nome = el.novoCliente.value.trim();
+    if (!nome || clientes.includes(nome)) return;
 
-      renderTabs();
-      renderTabela();
-    }
-  }
+    clientes.push(nome);
+    coresClientes[nome] = "#0047ff";
 
-  // ==================== FUNÇÕES DE ANOTAÇÃO ====================
-  function adicionarOuEditarAnotacao(ev) {
-    ev.preventDefault();
-    
-    const etapa = elementos.inputEtapa.value.trim();
-    const obs = elementos.inputObs.value.trim();
-    const dataVal = elementos.inputData.value;
-    
-    if (!etapa || !obs || !dataVal) {
-      mostrarNotificacao("Preencha todos os campos!", "erro");
+    salvarClientes();
+    salvarCores();
+
+    el.novoCliente.value = "";
+    renderTabs();
+  };
+
+  el.form.onsubmit = (e) => {
+    e.preventDefault();
+    if (!clienteSelecionado) {
+      alert("Selecione um cliente.");
       return;
     }
 
-    const cliente = clienteSelecionado || "Geral";
-    
-    // Garante que "Geral" existe como cliente
-    if (cliente === "Geral" && !clientes.includes("Geral")) {
-      clientes.push("Geral");
-      salvarClientes();
-      renderTabs();
-    }
-
-    const dataBr = formatarDataBr(dataVal);
-
-    // Se está editando
-    if (editandoId) {
-      const index = anotacoes.findIndex(a => a.id === editandoId);
-      if (index !== -1) {
-        anotacoes[index] = {
-          ...anotacoes[index],
-          etapa,
-          obs,
-          data: dataBr,
-          _rawDate: dataVal
-        };
-        mostrarNotificacao("Anotação editada com sucesso!");
-      }
-    } else {
-      // Adicionar nova
-      const registro = {
-        id: gerarId(),
-        cliente,
-        etapa,
-        obs,
-        data: dataBr,
-        _rawDate: dataVal
-      };
-      anotacoes.push(registro);
-      mostrarNotificacao("Anotação adicionada com sucesso!");
-    }
+    anotacoes.push({
+      cliente: clienteSelecionado,
+      etapa: el.etapa.value,
+      obs: el.obs.value,
+      data: new Date(el.data.value).toLocaleString("pt-BR")
+    });
 
     salvarAnotacoes();
-
-    if (cliente !== clienteSelecionado) {
-      clienteSelecionado = cliente;
-      renderTabs();
-    }
-    
     renderTabela();
-    limparFormulario();
-  }
+    el.form.reset();
+  };
 
-  // ==================== FUNÇÃO DE EXPORTAÇÃO ====================
-  function exportarParaExcel() {
-    const filtro = clienteSelecionado;
-    const itens = anotacoes.filter(a => 
-      filtro ? a.cliente === filtro : true
+  el.export.onclick = () => {
+    if (!window.XLSX) return;
+    const rows = [["Cliente", "Etapa", "Observações", "Data"]];
+    anotacoes.forEach(a =>
+      rows.push([a.cliente, a.etapa, a.obs, a.data])
     );
-
-    if (itens.length === 0) {
-      mostrarNotificacao("Nenhuma anotação para exportar!", "erro");
-      return;
-    }
-
-    const rows = [
-      ["Cliente", "Etapa", "Observações", "Data"]
-    ];
-
-    itens.forEach(a => {
-      rows.push([a.cliente, a.etapa, a.obs, a.data]);
-    });
-
     const ws = XLSX.utils.aoa_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Anotações");
+    XLSX.writeFile(wb, "anotacoes.xlsx");
+  };
 
-    const nomeArquivo = filtro
-      ? `anotacoes_${filtro}.xlsx`
-      : "anotacoes_todas.xlsx";
-
-    XLSX.writeFile(wb, nomeArquivo);
-    
-    mostrarNotificacao("Arquivo exportado com sucesso!");
-  }
-
-  // ==================== EVENTOS ====================
-  elementos.btnAddCliente.addEventListener("click", adicionarCliente);
-  
-  elementos.inputNovoCliente.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      adicionarCliente();
-    }
-  });
-
-  elementos.noteForm.addEventListener("submit", adicionarOuEditarAnotacao);
-  
-  elementos.btnExport.addEventListener("click", exportarParaExcel);
-
-  // ==================== INICIALIZAÇÃO FINAL ====================
   renderTabs();
   renderTabela();
-
-  console.log("✅ AnotaOne carregado com sucesso!");
 });
-
-const LS_CLIENTES_CORES = "anotone_clientes_cores";
-let coresClientes = JSON.parse(localStorage.getItem(LS_CLIENTES_CORES)) || {};
-function salvarCoresClientes() {
-  localStorage.setItem(LS_CLIENTES_CORES, JSON.stringify(coresClientes));
-}
-
-function salvarCoresClientes() {
-  localStorage.setItem(
-    LS_CLIENTES_CORES,
-    JSON.stringify(coresClientes)
-  );
-}

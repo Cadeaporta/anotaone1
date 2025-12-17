@@ -1,65 +1,98 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <!-- ==================== META TAGS ==================== -->
   <meta charset="UTF-8">
-  <title>AnotaOne</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta name="description" content="AnotaOne - Gerenciador de Clientes e Anotações">
+  
+  <!-- ==================== TÍTULO ==================== -->
+  <title>AnotaOne - Gerenciador de Clientes</title>
+  
+  <!-- ==================== ESTILOS ==================== -->
   <link rel="stylesheet" href="style.css">
-
+  
+  <!-- ==================== BIBLIOTECAS EXTERNAS ==================== -->
   <script defer src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
+  <!-- ==================== CONTAINER PRINCIPAL ==================== -->
   <div class="container">
-
+    
+    <!-- ==================== CABEÇALHO ==================== -->
     <header>
       <h1>AnotaOne</h1>
     </header>
 
-    <!-- ADD CLIENTE -->
+    <!-- ==================== SEÇÃO: ADICIONAR CLIENTE ==================== -->
     <section class="add-client-section">
       <div class="add-client-box">
-        <input type="text" id="novoCliente" placeholder="Adicionar novo cliente">
-        <button id="addClienteBtn">
+        <input 
+          type="text" 
+          id="novoCliente" 
+          placeholder="Adicionar novo cliente"
+          autocomplete="off"
+        >
+        <button 
+          id="addClienteBtn" 
+          type="button"
+          title="Adicionar cliente"
+        >
           <i data-lucide="badge-plus"></i>
         </button>
       </div>
     </section>
 
-    <!-- ABAS -->
+    <!-- ==================== SEÇÃO: ABAS DE CLIENTES ==================== -->
     <section class="tabs-section">
       <div id="tabs" class="tabs"></div>
     </section>
 
-    <!-- FORM -->
+    <!-- ==================== SEÇÃO: FORMULÁRIO DE ANOTAÇÕES ==================== -->
     <section class="form-section">
       <form id="noteForm">
-
+        
         <div class="form-group">
-          <label>Protocolo</label>
-          <input type="text" id="etapa" required>
+          <label for="etapa">Protocolo</label>
+          <input 
+            type="text" 
+            id="etapa" 
+            autocomplete="off"
+            required
+          >
         </div>
 
         <div class="form-group">
-          <label>Observações</label>
-          <textarea id="observacoes" required></textarea>
+          <label for="observacoes">Observações</label>
+          <textarea 
+            id="observacoes" 
+            rows="4" 
+            placeholder="Descreva o que foi feito ou observado..."
+            required
+          ></textarea>
         </div>
 
         <div class="form-group">
-          <label>Data e hora</label>
-          <input type="datetime-local" id="data" required>
+          <label for="data">Data e hora</label>
+          <input 
+            type="datetime-local" 
+            id="data" 
+            required
+          >
         </div>
 
-        <button class="btn-primary">Adicionar Anotação</button>
+        <button type="submit" class="btn-primary">
+          Adicionar Anotação
+        </button>
       </form>
     </section>
 
-    <!-- TABELA -->
+    <!-- ==================== SEÇÃO: TABELA DE ANOTAÇÕES ==================== -->
     <section class="table-section">
       <h2 id="tituloTabela">Anotações</h2>
-
+      
       <div class="table-wrapper">
         <table id="notesTable">
           <thead>
@@ -71,25 +104,35 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody>
+            <!-- Linhas dinâmicas inseridas pelo JavaScript -->
+          </tbody>
         </table>
       </div>
     </section>
 
-    <!-- EXPORT -->
+    <!-- ==================== SEÇÃO: EXPORTAÇÃO ==================== -->
     <section class="export-section">
-      <button id="exportExcel" class="btn-export">
+      <button 
+        id="exportExcel" 
+        type="button"
+        class="btn-export"
+        title="Exportar para Excel"
+      >
         <i data-lucide="file-down"></i>
         Exportar para XLSX
       </button>
     </section>
+
   </div>
 
+  <!-- ==================== NOTIFICAÇÕES ==================== -->
   <div id="notificacao" class="notificacao">
     <i data-lucide="check-circle"></i>
     <span id="notificacaoTexto"></span>
   </div>
 
+  <!-- ==================== SCRIPTS ==================== -->
   <script src="script.js"></script>
 </body>
 </html>
