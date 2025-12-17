@@ -596,3 +596,42 @@ tbody tr {
 #notesTable td:nth-child(3) {
   padding: 28px 32px;
 }
+
+/* ================= AJUSTE DE LARGURA DA TABELA ================= */
+/* leitura melhor sem estourar layout */
+
+#notesTable {
+  table-layout: fixed;
+}
+
+/* Cliente */
+#notesTable th:nth-child(1),
+#notesTable td:nth-child(1) {
+  width: 18%;
+}
+
+/* Etapa */
+#notesTable th:nth-child(2),
+#notesTable td:nth-child(2) {
+  width: 12%;
+}
+
+/* Observações (prioridade) */
+#notesTable th:nth-child(3),
+#notesTable td:nth-child(3) {
+  width: 40%;
+  word-break: break-word;
+}
+
+/* Data */
+#notesTable th:nth-child(4),
+#notesTable td:nth-child(4) {
+  width: 15%;
+}
+
+/* Ações */
+#notesTable th:nth-child(5),
+#notesTable td:nth-child(5) {
+  width: 15%;
+}
+
