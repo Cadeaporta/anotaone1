@@ -14,7 +14,7 @@ body {
 
 /* ==================== CONTAINER PRINCIPAL ==================== */
 .container {
-  max-width: 900px;
+  max-width: 1300px;
   margin: 50px auto;
   background: linear-gradient(to bottom, rgb(10, 5, 37), blue);
   padding: 30px;
@@ -596,7 +596,6 @@ tbody tr {
 #notesTable td:nth-child(3) {
   padding: 28px 32px;
 }
-
 
 /* Aumentar espaço da coluna Data */
 #notesTable th:nth-child(4),
