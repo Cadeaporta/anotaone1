@@ -29,6 +29,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const LS_ANOTACOES = "anotone_anotacoes";
   
   let clientes = JSON.parse(localStorage.getItem(LS_CLIENTES)) || [];
+
+// converte clientes antigos (string) em objeto
+clientes = clientes.map(c =>
+  typeof c === "string"
+    ? { nome: c, cor: "#0047ff" }
+    : c
+);
   let anotacoes = JSON.parse(localStorage.getItem(LS_ANOTACOES)) || [];
   let clienteSelecionado = null; // null = todas
   let editandoId = null; // ID da anotação sendo editada
@@ -205,36 +212,60 @@ tdData.innerText = dataFormatada;
   }
 
   // ==================== FUNÇÕES DE ABAS ====================
-  function criarAbaCliente(nome) {
-    const divTab = document.createElement("div");
-    divTab.classList.add("tag");
+  function criarAbaCliente(cliente) {
+  const divTab = document.createElement("div");
+  divTab.classList.add("tag");
 
-    const btnNome = document.createElement("button");
-    btnNome.type = "button";
-    btnNome.className = "tab-btn tag-name";
-    btnNome.innerText = nome;
-    if (clienteSelecionado === nome) btnNome.classList.add("active");
-    
-    btnNome.addEventListener("click", () => {
-      clienteSelecionado = nome;
-      renderTabs();
-      renderTabela();
-    });
+  const btnNome = document.createElement("button");
+  btnNome.type = "button";
+  btnNome.className = "tab-btn tag-name";
+  btnNome.innerText = cliente.nome;
+  btnNome.style.background = cliente.cor;
 
-    const btnDelete = document.createElement("button");
-    btnDelete.classList.add("close-btn");
-    btnDelete.textContent = "×";
-    btnDelete.title = `Excluir cliente "${nome}"`;
-    btnDelete.addEventListener("click", (e) => {
-      e.stopPropagation();
-      excluirCliente(nome);
-    });
-
-    divTab.appendChild(btnNome);
-    divTab.appendChild(btnDelete);
-
-    return divTab;
+  if (clienteSelecionado === cliente.nome) {
+    btnNome.classList.add("active");
   }
+
+  // selecionar cliente
+  btnNome.addEventListener("click", () => {
+    clienteSelecionado = cliente.nome;
+    renderTabs();
+    renderTabela();
+  });
+
+  // EDITAR nome + cor (duplo clique)
+  btnNome.addEventListener("dblclick", () => {
+    const novoNome = prompt("Novo nome do cliente:", cliente.nome);
+    if (!novoNome) return;
+
+    const novaCor = prompt(
+      "Cor do cliente (hex):",
+      cliente.cor
+    );
+
+    cliente.nome = novoNome.trim();
+    if (novaCor) cliente.cor = novaCor.trim();
+
+    salvarClientes();
+    renderTabs();
+    renderTabela();
+  });
+
+  const btnDelete = document.createElement("button");
+  btnDelete.classList.add("close-btn");
+  btnDelete.textContent = "×";
+
+  btnDelete.addEventListener("click", (e) => {
+    e.stopPropagation();
+    excluirCliente(cliente.nome);
+  });
+
+  divTab.appendChild(btnNome);
+  divTab.appendChild(btnDelete);
+
+  return divTab;
+}
+
 
   function renderTabs() {
     elementos.tabsContainer.innerHTML = "";
@@ -276,7 +307,10 @@ tdData.innerText = dataFormatada;
       return;
     }
     
-    clientes.push(nome);
+    clientes.push({
+  nome,
+  cor: "#0047ff"
+});
     salvarClientes();
     elementos.inputNovoCliente.value = "";
     clienteSelecionado = nome;
@@ -419,3 +453,16 @@ tdData.innerText = dataFormatada;
 
   console.log("✅ AnotaOne carregado com sucesso!");
 });
+
+const LS_CLIENTES_CORES = "anotone_clientes_cores";
+let coresClientes = JSON.parse(localStorage.getItem(LS_CLIENTES_CORES)) || {};
+function salvarCoresClientes() {
+  localStorage.setItem(LS_CLIENTES_CORES, JSON.stringify(coresClientes));
+}
+
+function salvarCoresClientes() {
+  localStorage.setItem(
+    LS_CLIENTES_CORES,
+    JSON.stringify(coresClientes)
+  );
+}

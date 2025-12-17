@@ -290,21 +290,26 @@ thead {
 }
 
 th {
-  padding: 18px 20px;
   text-align: left;
   font-weight: bold;
   border: 2px solid #000000;
+  padding: 22px 24px;
+  font-size: 15px;
 }
 
 td {
-  padding: 18px 20px;
-  vertical-align: top;
   border: 2px solid #000000;
+  padding: 22px 24px;      /* MAIS RESPIRO */
+  
+  vertical-align: top;     /* texto começa no topo */
+  line-height: 1.6;
 }
+
 
 tbody tr {
   background: #f9f9f9;
   transition: background 0.2s ease;
+  min-height: 70px;
 }
 
 tbody tr:hover {
@@ -459,6 +464,33 @@ table td {
 
 tbody tr {
   line-height: 1.6;
+}
+
+/* Coluna Cliente */
+#notesTable td:first-child {
+  min-width: 200px;
+  font-weight: bold;
+  padding: 26px 24px;
+}
+
+/* ==================== TABELA MAIS ESPAÇADA ==================== */
+
+th {
+  padding: 22px 26px;
+}
+
+td {
+  padding: 26px 30px;
+  line-height: 1.7;
+  vertical-align: top;
+}
+
+tbody tr {
+  min-height: 80px;
+}
+
+#notesTable td:nth-child(3) {
+  padding: 30px 34px;
 }
 
 
