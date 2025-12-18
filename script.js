@@ -163,28 +163,29 @@ function showNotif(texto) {
   /* ========= TABELA ========= */
 
   function renderTabela() {
-    el.tbody.innerHTML = "";
-    el.titulo.textContent = clienteSelecionado
-      ? `Anotações — ${clienteSelecionado}`
-      : "Anotações — Todas";
+  el.tbody.innerHTML = "";
+  el.titulo.textContent = clienteSelecionado
+    ? `Anotações — ${clienteSelecionado}`
+    : "Anotações — Todas";
 
-    anotacoes
-      .filter(a => !clienteSelecionado || a.cliente === clienteSelecionado)
-      .forEach((a, index) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${a.cliente}</td>
-          <td>${a.etapa}</td>
-          <td>${a.obs}</td>
-          <td>${a.data}</td>
-          <td>
-            <button onclick="editarAnotacao(${index})">✏️</button>
-            <button onclick="excluirAnotacao(${index})">🗑</button>
-          </td>
-        `;
-        el.tbody.appendChild(tr);
-      });
-  }
+  anotacoes.forEach((a, realIndex) => {
+    if (clienteSelecionado && a.cliente !== clienteSelecionado) return;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${a.cliente}</td>
+      <td>${a.etapa}</td>
+      <td>${a.obs}</td>
+      <td>${a.data}</td>
+      <td>
+        <button onclick="editarAnotacao(${realIndex})">✏️</button>
+        <button onclick="excluirAnotacao(${realIndex})">🗑</button>
+      </td>
+    `;
+    el.tbody.appendChild(tr);
+  });
+}
+
 
   /* ========= ANOTAÇÕES ========= */
 
@@ -270,9 +271,19 @@ function showNotif(texto) {
     XLSX.writeFile(wb, "anotacoes.xlsx");
   };
 
+  showNotif("Anotação excluída");
+
+  indexEmEdicao = null;
+el.form.reset();
+el.form.querySelector("button[type='submit']").textContent = "Adicionar anotação";
+
+
   renderTabs();
   renderTabela();
 });
 
-showNotif("Anotação excluída");
+
+
+
+
 
